@@ -237,7 +237,22 @@ Errores específicos al registrar:
 
 No hay rutas para editar ni eliminar préstamos o líneas de préstamo.
 
-`POST /loans/{loan_id}/items/{item_id}/return` → 200 con la línea (`returned_at` lleno).
+`POST /loans/{loan_id}/items/{item_id}/return`:
+
+- Requiere un token de `admin` o `librarian`.
+- Recibe los UUID de un préstamo y una de sus líneas; no tiene cuerpo de petición.
+- En una única operación, fija `returned_at` al instante UTC actual e incrementa en uno la disponibilidad del libro de esa línea.
+- Responde `200` con la línea devuelta y su `returned_at` lleno.
+- El estado no se escribe: al consultar el préstamo se calcula `closed` si todas sus líneas ya fueron devueltas.
+
+Errores específicos al devolver:
+
+- `401` sin token o con token inválido; `403 FORBIDDEN_ROLE` con un rol insuficiente.
+- `404 NOT_FOUND` si el préstamo, la línea o la relación entre ambos no existe.
+- `422 VALIDATION_ERROR` si alguno de los identificadores no tiene formato válido.
+- `409 ITEM_ALREADY_RETURNED` si la línea ya fue devuelta; la disponibilidad no cambia.
+
+No hay operación para revertir, editar o eliminar una devolución.
 
 `GET /loans/overdue` → `items`: `{ "loan_id", "item_id", "book_title", "member_name", "due_at", "days_late" }`. Aquí sí se muestra el nombre del
 socio, porque es un listado operativo; **el reporte del §3.7 no**.

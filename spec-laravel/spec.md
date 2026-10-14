@@ -253,6 +253,33 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-07.3** Los disponibles jamás superan el total (la base lo garantiza).
 - **CA-07.4** Cuando todas las líneas están devueltas, el préstamo figura como **cerrado**.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`.
+- El préstamo, la línea y su relación entre sí existen; la línea todavía no tiene `returned_at`.
+
+**Flujo principal: devolver una línea**
+
+1. El usuario autorizado envía `POST /api/v1/loans/{loan_id}/items/{item_id}/return`.
+2. El sistema localiza la línea que pertenece al préstamo indicado y comprueba que aún no fue devuelta.
+3. En una misma operación, establece `returned_at` con el instante UTC actual y suma exactamente un ejemplar a `available_copies` del libro.
+4. Devuelve `200` con la línea actualizada.
+5. El estado del préstamo se sigue calculando a partir de sus líneas: pasa a `closed` cuando todas tienen `returned_at`; en otro caso conserva el estado que corresponda al reloj y las líneas pendientes.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`; con un rol no autorizado: `403`.
+- Préstamo, línea o relación préstamo-línea inexistente: `404 NOT_FOUND`.
+- Identificadores con formato inválido: `422 VALIDATION_ERROR`.
+- Línea que ya tiene `returned_at`: `409 ITEM_ALREADY_RETURNED`; no se modifica la disponibilidad.
+
+**Reglas de conservación**
+
+- Una devolución solo puede afectar una línea por solicitud y solo puede incrementar una vez la disponibilidad del libro asociado.
+- La disponibilidad nunca puede superar `total_copies`; `ck_book_available_range` es la barrera final del motor.
+- El préstamo y los valores congelados de sus líneas permanecen inmutables; esta operación únicamente completa `returned_at` en la línea devuelta.
+- No existen rutas para editar ni eliminar préstamos, líneas o devoluciones.
+
 ### HU-08 · Ver un préstamo y listar préstamos
 - **CA-08.1** Consultar un préstamo trae sus líneas y su estado calculado (`open`, `overdue`, `closed`).
 - **CA-08.2** Listar por rango de fechas, estado y socio, orden por fecha descendente, paginado.
