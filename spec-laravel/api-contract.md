@@ -130,6 +130,16 @@ La contraseña y su hash nunca forman parte de una respuesta o de un log.
 | PUT | `/books/{id}/cover` | admin | Sube portada (`multipart/form-data`, campo `file`) |
 | DELETE | `/books/{id}/cover` | admin | Quita la portada |
 
+`GET /books` acepta `q`, `category_id`, `page` y `size`. `q` busca texto parcial en título o autor; los resultados solo incluyen libros activos, se ordenan por título y se paginan con un `size` máximo de `50`.
+
+Respuesta de listado:
+
+```json
+{ "items": [], "page": 1, "size": 20, "total": 0 }
+```
+
+`GET /books/{id}` devuelve `404 NOT_FOUND` si el UUID no existe o si el libro está dado de baja. Los filtros y parámetros de paginación inválidos responden `422 VALIDATION_ERROR`.
+
 Libro (respuesta):
 
 ```json

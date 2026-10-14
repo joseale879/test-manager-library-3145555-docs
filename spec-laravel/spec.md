@@ -137,6 +137,39 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-04.2** La respuesta incluye el total de resultados.
 - **CA-04.3** Consultar un libro por id inexistente o dado de baja: 404.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`.
+- Las consultas se realizan sobre el catálogo activo y sus categorías existentes.
+
+**Flujo principal: listado**
+
+1. El usuario autenticado consulta `GET /api/v1/books`.
+2. Puede enviar `q` para buscar texto parcial en título o autor.
+3. Puede enviar `category_id` para filtrar por categoría.
+4. El sistema excluye los libros con baja lógica, ordena por título y aplica `page` y `size`.
+5. El sistema devuelve los elementos de la página y el total de coincidencias antes de paginar.
+
+**Flujo principal: detalle**
+
+1. El usuario autenticado consulta `GET /api/v1/books/{id}`.
+2. El sistema devuelve el detalle del libro si existe y está activo.
+3. Un libro dado de baja se trata igual que un libro inexistente para esta consulta.
+
+**Reglas de paginación y respuesta**
+
+- `page` comienza en `1` y `size` no puede superar `50`.
+- La respuesta de listado usa `{ "items": [...], "page": 1, "size": 20, "total": 134 }`.
+- El orden principal es ascendente por `title`.
+- La respuesta de detalle conserva `available_copies`, `total_copies`, categoría y `cover_key` sin exponer rutas ni bytes de portada.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`.
+- Con un filtro o parámetro de paginación inválido: `422 VALIDATION_ERROR`.
+- Consultar un libro inexistente o dado de baja: `404 NOT_FOUND`.
+- Una búsqueda sin coincidencias responde correctamente con `items: []` y `total: 0`.
+
 ### HU-05 · Gestionar socios
 - **CA-05.1** El admin y el bibliotecario crean socios con nombre y documento. El documento es único: repetido 409.
 - **CA-05.2** Se lista y se busca por nombre o documento, paginado.
