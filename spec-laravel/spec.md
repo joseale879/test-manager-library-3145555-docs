@@ -320,6 +320,31 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-09.1** Lista las líneas sin devolver con `due_at` anterior a ahora: libro, socio, días de retraso.
 - **CA-09.2** Ordenadas por más días de retraso primero. Solo `admin` y `librarian`.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`.
+- El instante de referencia es el reloj del sistema en UTC; los vencimientos y devoluciones están almacenados como instantes UTC.
+
+**Flujo principal: consultar vencidos**
+
+1. El usuario autorizado solicita `GET /api/v1/loans/overdue`.
+2. El sistema selecciona únicamente las líneas cuyo `returned_at` es nulo y cuyo `due_at` es anterior al instante de consulta.
+3. Para cada línea calcula `days_late`, incluye el préstamo, libro, socio y vencimiento requeridos por el contrato.
+4. Ordena las líneas por mayor número de días de retraso y devuelve el listado operativo.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`.
+- Con un rol diferente de `admin` o `librarian`: `403 FORBIDDEN_ROLE`.
+- Si no hay líneas vencidas, devuelve `items` vacío; no es un error.
+
+**Reglas de conservación y privacidad**
+
+- `days_late` se calcula al consultar; no se almacena.
+- Una línea ya devuelta no aparece aunque su `due_at` haya vencido antes de la devolución.
+- El listado es operativo y puede incluir `member_name`; esa excepción no autoriza a incluir socios ni bibliotecarios en el reporte agregado de HU-10.
+- Consultar vencidos no cambia el estado persistido, la disponibilidad ni las fechas de devolución.
+
 ### HU-10 · Reporte de libros más prestados
 - **CA-10.1** Dado un rango de fechas, una fila por **libro y nombre de categoría congelado**, con la cantidad de veces prestado, ordenado de mayor a menor.
 - **CA-10.2** Fin anterior al inicio: 422. Rango sin préstamos: lista vacía, no error.

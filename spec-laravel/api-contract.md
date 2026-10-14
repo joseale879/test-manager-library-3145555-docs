@@ -260,8 +260,15 @@ No hay operación para revertir, editar o eliminar una devolución.
 
 La definición pendiente de los límites de `from` y `to`, y de la proyección exacta de cada elemento del listado, está registrada en DT-008. No se infiere ni se añade un comportamiento mientras esa deuda esté pendiente.
 
-`GET /loans/overdue` → `items`: `{ "loan_id", "item_id", "book_title", "member_name", "due_at", "days_late" }`. Aquí sí se muestra el nombre del
-socio, porque es un listado operativo; **el reporte del §3.7 no**.
+`GET /loans/overdue` requiere rol `admin` o `librarian` y devuelve únicamente las líneas sin devolver cuyo `due_at` sea anterior al instante UTC de la consulta. Calcula `days_late`, no lo persiste, y ordena los resultados por mayor retraso primero.
+
+```json
+{ "items": [
+  { "loan_id": "…", "item_id": "…", "book_title": "Cien años de soledad", "member_name": "Ana Pérez", "due_at": "2026-10-01T14:15:00Z", "days_late": 13 }
+] }
+```
+
+Sin token o con token inválido responde `401`; con rol insuficiente, `403 FORBIDDEN_ROLE`. Si no hay vencidos devuelve `items` vacío. Aquí sí se muestra el nombre del socio, porque es un listado operativo; **el reporte del §3.7 no**.
 
 ### 3.7 Reporte
 
