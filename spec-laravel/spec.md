@@ -34,6 +34,31 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-01.2** Con credenciales inválidas responde 401 con un mensaje que **no** dice si falló el usuario o la clave.
 - **CA-01.3** Todo endpoint salvo el inicio de sesión y `/health` exige token. Sin token: 401. Rol insuficiente: 403.
 
+**Precondiciones**
+
+- El usuario ya existe y tiene uno de los roles permitidos: `admin` o `librarian`.
+- El endpoint de inicio de sesión es público; no requiere un token previo.
+
+**Flujo principal**
+
+1. El usuario envía `username` y `password` a `POST /api/v1/auth/login`.
+2. El sistema busca el usuario y verifica la contraseña contra el hash almacenado.
+3. El sistema emite un JWT con vigencia de 8 horas.
+4. La respuesta incluye el token, el tipo `Bearer`, `expires_in` igual a `28800` y el rol del usuario.
+
+**Flujos alternos y errores**
+
+- Si las credenciales no son válidas, responde `401` con `INVALID_CREDENTIALS` sin revelar si falló el usuario o la contraseña.
+- Si se consulta un endpoint protegido sin token, responde `401`.
+- Si el token es inválido o está vencido, responde `401`.
+- Si el token es válido pero el rol no tiene permiso para la operación, responde `403`.
+
+**Reglas de seguridad**
+
+- El JWT contiene `sub` y `role`, pero no contiene datos personales innecesarios.
+- La contraseña nunca se devuelve, se registra en logs ni se almacena en texto claro.
+- La clave usada para firmar el token proviene del entorno.
+
 ### HU-02 · Dar de alta bibliotecarios (admin)
 - **CA-02.1** El admin crea un usuario con nombre, clave y rol `librarian`.
 - **CA-02.2** El nombre de usuario se guarda en minúsculas y recortado; es único. Repetido: 409.

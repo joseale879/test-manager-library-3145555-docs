@@ -76,6 +76,18 @@ Qué hace cada operación está en [`spec.md`](spec.md); qué se guarda, en [`da
 { "access_token": "eyJ...", "token_type": "Bearer", "expires_in": 28800, "role": "librarian" }
 ```
 
+Credenciales inválidas (`401`):
+
+```json
+{
+  "code": "INVALID_CREDENTIALS",
+  "message": "Usuario o contraseña inválidos.",
+  "details": []
+}
+```
+
+El mensaje es el mismo tanto si el usuario no existe como si la contraseña no coincide.
+
 ### 3.2 Usuarios
 
 | Método | Ruta | Rol | Descripción |
