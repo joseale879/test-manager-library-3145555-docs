@@ -27,6 +27,7 @@ Cada tarea termina cuando su **evidencia** existe y se puede ejecutar (artículo
 | T-21 | `tool`: sembrador de demostración **por la API** (≥ 40 libros, 10 socios, 15 préstamos, 3 vencidos) | T-17 | Tras correrlo, `/loans/overdue` devuelve 3 líneas y el reporte tiene filas |
 | T-22 | `app`: login, catálogo, socios, prestar, devolver, vencidos, reporte | T-16 | Recorrido manual de punta a punta en la feria |
 | T-23 | `page`: sitio público estático de presentación | — | Se abre sin la API; correcto en móvil y escritorio |
+| T-24 | Bajar a PostgreSQL las invariantes de libro pendientes | T-02 | Un `INSERT` por `psql` con ISBN que no tenga 13 dígitos o `cover_key` vacío falla; nulo sigue permitido para `cover_key`; `data-model.md` §4 queda actualizado |
 
 ## Definición de terminado de la prueba
 

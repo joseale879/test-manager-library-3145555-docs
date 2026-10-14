@@ -132,6 +132,8 @@ porque ningún requisito las pide.
 | `loan_item.book_id` → `book.id` RESTRICT | FK | **motor** |
 | `0 <= available_copies <= total_copies` | `ck_book_available_range` | **motor** — última barrera de concurrencia |
 | `total_copies >= 1` | `ck_book_total_positive` | **pendiente (T-18)** · hoy solo dominio |
+| ISBN de libro compuesto por 13 dígitos ASCII | `ck_book_isbn_digits` | **pendiente (T-24)** · hoy solo dominio |
+| `cover_key` nulo o distinto de cadena vacía | `ck_book_cover_key_nonempty` | **pendiente (T-24)** · hoy solo dominio |
 | Único `(loan_id, book_id)` | índice único | **motor** |
 | `role` en (`admin`,`librarian`) | `ck_user_role` | **pendiente (T-18)** · hoy solo dominio |
 | Máximo 3 sin devolver por socio | — | **solo dominio** (no expresable en un `CHECK`) |
