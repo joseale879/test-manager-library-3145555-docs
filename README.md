@@ -12,7 +12,7 @@ con el spec planteado**.
 
 1. Hacer fork, a su cuenta de GitHub, de cada repositorio de la tabla del final.
 2. Leer el spec en [`test-manager-library-3145555-docs`](https://github.com/code-sena/test-manager-library-3145555-docs).
-   Se entrega en dos versiones: `spec-python/` y `spec-.net/`.
+   Las versiones de referencia son `spec-python/` y `spec-.net/`; la traducción tecnológica del reto está en `spec-laravel-php/`.
 3. Desarrollar en los forks.
 
 ## El reto se desarrolla con React y PHP (Laravel)
@@ -42,15 +42,18 @@ No hay prórroga: suban avances parciales con commits pequeños durante la prueb
 
 | Carpeta | Contenido |
 |---|---|
-| [`spec-python/`](spec-python/) | El spec de Manager Library escrito para un backend Python |
-| [`spec-.net/`](spec-.net/) | El mismo sistema especificado para un backend .NET |
+| [`spec-python/`](spec-python/) | El spec de referencia de Manager Library para un backend Python |
+| [`spec-.net/`](spec-.net/) | El spec de referencia de Manager Library para un backend .NET |
+| [`spec-laravel-php/`](spec-laravel-php/) | La traducción tecnológica del mismo producto para PHP con Laravel |
 
-Las dos versiones describen el **mismo producto** (las mismas historias, reglas de negocio y
-endpoints); cambian las decisiones de tecnología. Ninguna de las dos es el stack del reto.
+Las decisiones pendientes de la traducción a Laravel/PHP se registran en [`spec-laravel-php/deuda-tecnica.md`](spec-laravel-php/deuda-tecnica.md); no se resuelven ampliando el alcance.
+
+Las tres carpetas describen el **mismo producto** (las mismas historias, reglas de negocio y
+endpoints). `spec-python/` y `spec-.net/` son referencias; `spec-laravel-php/` documenta el stack objetivo del reto.
 
 ## Cómo se lee el spec
 
-En cualquiera de las dos carpetas, en este orden:
+En cualquiera de las tres carpetas, en este orden:
 
 1. `constitution.md` — principios innegociables.
 2. `spec.md` — qué debe hacer el sistema: actores, historias, criterios de aceptación, reglas de negocio.
