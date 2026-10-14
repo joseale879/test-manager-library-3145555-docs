@@ -352,6 +352,32 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-10.4** Un reporte de un periodo cerrado **no cambia** aunque luego se renombre el libro o su categoría.
 - **CA-10.5** Solo `admin`.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin`.
+- Se proporcionan `from` y `to` como fechas; ambas son inclusivas.
+
+**Flujo principal: consultar el reporte**
+
+1. El administrador envía `GET /api/v1/reports/most-borrowed` con `from` y `to`.
+2. El sistema consulta los préstamos y sus líneas correspondientes al rango.
+3. Agrupa por `book_id`, `book_title` y `category_name` congelados en cada línea, y calcula `times_borrowed`.
+4. Ordena las filas por `times_borrowed` descendente y luego por título.
+5. Devuelve el rango solicitado y las filas agregadas, sin datos de socios ni bibliotecarios.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`; con rol insuficiente: `403 FORBIDDEN_ROLE`.
+- Fechas ausentes, con formato inválido o rango invertido: `422`; el rango invertido usa `INVALID_DATE_RANGE`.
+- Si el rango no contiene préstamos, devuelve `rows` vacío; no es un error.
+
+**Reglas de conservación y privacidad**
+
+- El reporte se calcula al solicitarlo y no se persiste como una segunda fuente de verdad.
+- Título y categoría se leen de los valores congelados de `loan_item`, no del catálogo actual; un cambio posterior del catálogo no reescribe el resultado de un periodo cerrado.
+- No incluye socios ni bibliotecarios, ni permite desglosar por ellos.
+- El campo de fecha que determina la pertenencia de un préstamo al rango queda registrado como deuda técnica DT-009 mientras no esté precisado en el modelo y contrato.
+
 ## 4. Reglas de negocio
 
 | # | Regla |

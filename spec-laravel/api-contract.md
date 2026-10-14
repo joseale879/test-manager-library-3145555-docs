@@ -287,6 +287,8 @@ Sin token o con token inválido responde `401`; con rol insuficiente, `403 FORBI
 
 Una fila por `book_id + book_title + category_name` congelados. Orden: `times_borrowed` descendente, luego título. Sin socios ni bibliotecarios.
 
+La ruta requiere rol `admin`. Sin token o con token inválido responde `401`; con rol insuficiente, `403 FORBIDDEN_ROLE`. Fechas ausentes o inválidas responden `422 VALIDATION_ERROR`; si `from` es posterior a `to`, responde `422 INVALID_DATE_RANGE`. Un rango válido sin préstamos devuelve `rows` vacío. La pertenencia temporal de cada préstamo al rango está pendiente en DT-009.
+
 ## 4. Seguridad
 
 | Aspecto | Regla |
