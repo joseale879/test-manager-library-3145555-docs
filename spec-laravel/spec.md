@@ -98,6 +98,40 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-03.4** Subir portada (JPG/PNG, máx. 2 MB) guarda una **clave opaca**; sin portada el campo es `null`, nunca cadena vacía.
 - **CA-03.5** Eliminar un libro es **baja lógica**: deja de aparecer en el catálogo pero sigue en los préstamos pasados. Un libro con préstamos abiertos no se da de baja (409).
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin`.
+- La categoría del libro existe en el catálogo de cinco categorías fijas.
+- Las operaciones de creación, edición, portada y baja se realizan sobre el recurso identificado por UUID.
+
+**Flujo principal**
+
+1. El admin crea un libro con título, autor, ISBN, categoría y total de ejemplares.
+2. El sistema valida el ISBN, la categoría y el total; inicia `available_copies` igual a `total_copies`.
+3. El admin puede reemplazar título, autor, categoría y total de un libro activo.
+4. El sistema ajusta los disponibles por la diferencia del total y rechaza cualquier resultado menor que cero.
+5. El admin puede subir una portada válida; el sistema almacena una clave opaca y no expone la ruta ni los bytes en el registro del libro.
+6. El admin puede quitar la portada; el registro queda con `cover_key` nulo.
+7. El admin puede solicitar la baja lógica de un libro sin préstamos abiertos.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`.
+- Con token válido pero sin rol `admin`: `403`.
+- ISBN inválido o total menor que uno: `422 VALIDATION_ERROR`.
+- ISBN repetido entre libros activos: `409 ISBN_TAKEN`.
+- Libro inexistente o dado de baja: `404 NOT_FOUND`.
+- Ajustar el total dejaría `available_copies` menor que cero: `422 VALIDATION_ERROR`.
+- Portada que no sea JPG/PNG válido o supere 2 MB: `422 VALIDATION_ERROR`.
+- Intentar dar de baja un libro con préstamos abiertos: `409 BOOK_HAS_OPEN_LOANS`.
+
+**Reglas de conservación**
+
+- La baja es lógica mediante `deleted_at`; no se borra el libro ni su historial.
+- Los libros dados de baja no aparecen en el catálogo activo.
+- El ISBN puede reutilizarse únicamente cuando el registro anterior está dado de baja.
+- Las contraseñas, rutas físicas y bytes de portada nunca forman parte de las respuestas del libro.
+
 ### HU-04 · Buscar libros
 - **CA-04.1** Búsqueda por texto parcial en título o autor, filtro por categoría, solo libros activos, orden por título, paginada (`page`, `size`, máx. 50).
 - **CA-04.2** La respuesta incluye el total de resultados.

@@ -143,6 +143,16 @@ Libro (respuesta):
 `POST /books` (petición): `title`, `author`, `isbn`, `category_id`, `total_copies`. Los disponibles los calcula el servidor.
 `cover_key` es una clave opaca: para pintar la portada se usa `GET /books/{id}/cover`, que devuelve el binario o 404.
 
+Reglas de autorización y errores para la gestión de libros:
+
+- `POST /books`, `PUT /books/{id}`, `DELETE /books/{id}` y las operaciones de portada requieren rol `admin`.
+- Sin token o con token inválido: `401`.
+- Con rol insuficiente: `403`.
+- ISBN repetido entre libros activos: `409 ISBN_TAKEN`.
+- Libro con préstamos abiertos al solicitar la baja: `409 BOOK_HAS_OPEN_LOANS`.
+- Campos inválidos, total inválido, disponibles menores que cero o portada no válida: `422 VALIDATION_ERROR`.
+- Libro inexistente o dado de baja: `404 NOT_FOUND`.
+
 ### 3.5 Socios
 
 | Método | Ruta | Rol | Descripción |
