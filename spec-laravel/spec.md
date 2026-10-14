@@ -285,6 +285,37 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-08.2** Listar por rango de fechas, estado y socio, orden por fecha descendente, paginado.
 - **CA-08.3** El estado **se calcula**, no se almacena.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`.
+- El estado se obtiene de las líneas y el reloj: no hay columna persistida para `status`.
+
+**Flujo principal: consultar un préstamo**
+
+1. El usuario autorizado solicita `GET /api/v1/loans/{id}`.
+2. El sistema obtiene el préstamo y sus líneas, incluidos los valores congelados, `due_at` y `returned_at`.
+3. Con el instante actual, calcula `open`, `overdue` o `closed` y devuelve el detalle sin modificar los datos históricos.
+
+**Flujo principal: listar préstamos**
+
+1. El usuario autorizado solicita `GET /api/v1/loans`.
+2. Puede filtrar por `from`, `to`, `status` y `member_id`, y usar `page` y `size` de la paginación común.
+3. El sistema calcula el estado de cada préstamo que cumpla los filtros, ordena por fecha de préstamo descendente y devuelve la página junto con el total.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`; con un rol no autorizado: `403`.
+- Préstamo inexistente al consultar por identificador: `404 NOT_FOUND`.
+- Identificadores, estado, filtros de fecha o parámetros de paginación inválidos: `422 VALIDATION_ERROR`.
+- Si una búsqueda no tiene coincidencias, devuelve una página vacía y `total` igual a cero; no es un error.
+
+**Reglas de conservación**
+
+- Consultar o listar no altera préstamos, líneas, disponibilidad ni fechas de devolución.
+- El estado se recalcula en cada consulta: una línea pendiente cuyo `due_at` ya pasó vuelve el préstamo `overdue`; todas las líneas devueltas lo vuelven `closed`.
+- Las líneas muestran sus valores congelados; un cambio posterior al catálogo no modifica el histórico consultado.
+- Los límites exactos del rango temporal y la proyección completa del listado permanecen registrados como deuda técnica DT-008, sin asumir una regla nueva.
+
 ### HU-09 · Libros vencidos
 - **CA-09.1** Lista las líneas sin devolver con `due_at` anterior a ahora: libro, socio, días de retraso.
 - **CA-09.2** Ordenadas por más días de retraso primero. Solo `admin` y `librarian`.

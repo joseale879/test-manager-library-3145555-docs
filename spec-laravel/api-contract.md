@@ -254,6 +254,12 @@ Errores específicos al devolver:
 
 No hay operación para revertir, editar o eliminar una devolución.
 
+`GET /loans/{id}` requiere rol `admin` o `librarian` y devuelve el préstamo con sus líneas, incluidos `book_title`, `isbn`, `category_name`, `due_at` y `returned_at`. Su `status` se calcula al responder; no se guarda ni se modifica por la consulta. Un identificador inexistente responde `404 NOT_FOUND` y uno con formato inválido, `422 VALIDATION_ERROR`.
+
+`GET /loans` requiere el mismo rol y acepta `from`, `to`, `status`, `member_id`, `page` y `size`. Ordena por `loaned_at` descendente y usa la respuesta paginada común. `status` solo admite `open`, `overdue` o `closed` y se calcula para cada resultado. Un filtro, identificador o parámetro de paginación inválido responde `422 VALIDATION_ERROR`; una consulta sin coincidencias devuelve `items` vacío y `total` igual a cero.
+
+La definición pendiente de los límites de `from` y `to`, y de la proyección exacta de cada elemento del listado, está registrada en DT-008. No se infiere ni se añade un comportamiento mientras esa deuda esté pendiente.
+
 `GET /loans/overdue` → `items`: `{ "loan_id", "item_id", "book_title", "member_name", "due_at", "days_late" }`. Aquí sí se muestra el nombre del
 socio, porque es un listado operativo; **el reporte del §3.7 no**.
 
