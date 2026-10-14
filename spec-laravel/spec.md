@@ -64,6 +64,33 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-02.2** El nombre de usuario se guarda en minúsculas y recortado; es único. Repetido: 409.
 - **CA-02.3** Pedir el rol `admin` por la API responde 422. La clave nunca se devuelve ni se registra en logs.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin`.
+- El endpoint no está disponible para usuarios `librarian` ni para solicitudes sin token.
+
+**Flujo principal**
+
+1. El admin envía `username`, `password` y `role` a `POST /api/v1/users`.
+2. El sistema recorta el nombre y lo normaliza a minúsculas.
+3. El sistema verifica que `role` sea `librarian` y que los campos sean válidos.
+4. El sistema guarda únicamente el hash de la contraseña.
+5. La respuesta `201` devuelve `id`, `username` normalizado y `role`, sin contraseña ni hash.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`.
+- Con token válido pero sin rol `admin`: `403`.
+- Con `role` igual a `admin` o un valor no permitido: `422 VALIDATION_ERROR`.
+- Con campos inválidos: `422 VALIDATION_ERROR`.
+- Con un nombre de usuario ya existente después de normalizarlo: `409 USERNAME_TAKEN`.
+
+**Reglas de seguridad**
+
+- El rol `admin` no se puede otorgar mediante esta operación.
+- La contraseña nunca aparece en respuestas ni logs.
+- El hash de la contraseña no se devuelve ni se expone mediante la API.
+
 ### HU-03 · Gestionar libros (admin)
 - **CA-03.1** Crear libro con título, autor, ISBN, categoría y total de ejemplares. Los disponibles arrancan iguales al total.
 - **CA-03.2** El ISBN tiene 13 dígitos y es único entre libros activos. Repetido: 409.

@@ -101,6 +101,17 @@ El mensaje es el mismo tanto si el usuario no existe como si la contraseña no c
 { "id": "…", "username": "ana", "role": "librarian" }
 ```
 
+La ruta exige un token de un usuario `admin`. El campo `role` solo acepta `librarian`.
+
+Errores específicos:
+
+- `401` si falta el token o no es válido.
+- `403` si el token pertenece a un `librarian`.
+- `409 USERNAME_TAKEN` si el nombre normalizado ya existe.
+- `422 VALIDATION_ERROR` si los campos no son válidos o se solicita el rol `admin`.
+
+La contraseña y su hash nunca forman parte de una respuesta o de un log.
+
 ### 3.3 Categorías
 
 | Método | Ruta | Rol | Descripción |
