@@ -216,6 +216,37 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-06.6** La fecha de vencimiento es `loaned_at + 14 días`. La línea congela título, ISBN y nombre de categoría **en ese instante**.
 - **CA-06.7** El préstamo registrado no se edita ni se borra.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`; su identidad es quien registra el préstamo.
+- El socio existe y cada libro solicitado existe y está activo.
+- El mecanismo concreto para evitar que dos solicitudes consuman el último ejemplar continúa registrado en DT-001; el resultado observable es el de RNF-2.
+
+**Flujo principal: registrar préstamo**
+
+1. El usuario autorizado envía `member_id` y de 1 a 3 elementos `{ "book_id" }` a `POST /api/v1/loans`.
+2. El sistema valida que no haya libros repetidos, consulta las líneas sin devolver del socio y verifica que no tenga vencidos ni supere tres libros sin devolver al sumar la solicitud.
+3. En una única operación, comprueba la disponibilidad de cada libro, descuenta exactamente un ejemplar por línea y crea el préstamo asociado al usuario autenticado.
+4. Para cada línea, fija `due_at` a `loaned_at + 14 días` y congela `book_title`, `isbn` y `category_name` del catálogo en ese instante.
+5. Devuelve `201` con el préstamo, sus líneas y el estado calculado `open`.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`; con un rol no autorizado: `403`.
+- Socio o libro inexistente, o libro dado de baja: `404 NOT_FOUND`.
+- Cero, más de tres líneas o campos inválidos: `422 VALIDATION_ERROR`.
+- Un mismo `book_id` más de una vez: `422 DUPLICATE_BOOK_IN_LOAN`.
+- Si el socio ya tiene libros abiertos y la solicitud haría que excediera tres, responde `422 MEMBER_LIMIT_EXCEEDED` e informa su conteo actual.
+- Si el socio tiene al menos una línea vencida sin devolver: `409 MEMBER_HAS_OVERDUE`.
+- Si algún libro no tiene ejemplares disponibles, incluso por conflicto concurrente, responde `409 BOOK_NOT_AVAILABLE`; no se crea el préstamo ni se descuenta ningún ejemplar de los demás libros.
+
+**Reglas de conservación**
+
+- `loaned_by_user_id` procede exclusivamente de la sesión autenticada; el cliente no puede elegir al bibliotecario que registra el préstamo.
+- El estado (`open`, `overdue`, `closed`) se calcula a partir de las líneas y el reloj, y no se almacena.
+- El préstamo y sus líneas no se editan ni se eliminan. La única modificación posterior permitida por el alcance es registrar una devolución en su propia HU, llenando `returned_at`.
+- Los valores congelados de la línea no cambian si después se modifica el libro o su categoría.
+
 ### HU-07 · Registrar una devolución
 - **CA-07.1** Se devuelve **una línea** a la vez. Pone `returned_at` y suma 1 a los disponibles.
 - **CA-07.2** Devolver una línea ya devuelta: 409. **Nunca** suma dos veces.

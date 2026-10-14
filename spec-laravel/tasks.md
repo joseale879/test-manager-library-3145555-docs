@@ -12,7 +12,7 @@ Cada tarea termina cuando su **evidencia** existe y se puede ejecutar (artículo
 | T-06 | Dominio: `Member` y `User` (normalización de nombre, rol válido) | T-03 | `"Ana "` queda `ana`; rol `admin` por API rechazado |
 | T-07 | Puertos y casos de uso de **autenticación** (`LoginService`, `CreateLibrarianService`) con fakes | T-06 | HU-01 y HU-02 pasan contra fakes; login válido, credenciales inválidas, creación de `librarian` y autorización por rol quedan probados |
 | T-08 | Puertos y casos de uso de **libros** (crear, buscar, editar, baja, portada) con fakes | T-04 | HU-03 y HU-04 pasan contra fakes; creación, edición, baja lógica, búsqueda parcial, paginación, total y permisos quedan probados |
-| T-09 | Caso de uso **prestar** (`LendBooksService`) con fakes | T-05, T-08 | HU-06 completa: límites, vencidos, sin ejemplares |
+| T-09 | Caso de uso **prestar** (`LendBooksService`) con fakes | T-05, T-08 | HU-06 pasa con `Clock` falso y fakes: 1–3 libros distintos, usuario autenticado registrado, descuento de uno por línea, vencimiento a 14 días, valores congelados, límite de tres con conteo actual, bloqueo por vencidos y reversión completa si falta algún ejemplar. |
 | T-10 | Caso de uso **devolver** y **vencidos** | T-09 | HU-07 y HU-09; devolver dos veces → `ITEM_ALREADY_RETURNED` |
 | T-11 | Caso de uso **reporte de más prestados** y su puerto de lectura | T-09 | HU-10; el título viejo se conserva tras renombrar (ADR-004) |
 | T-12 | Adaptador de persistencia: repositorios de libro, socio, usuario | T-02, T-08 | Pruebas de integración contra PostgreSQL real |

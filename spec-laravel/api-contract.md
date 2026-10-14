@@ -217,6 +217,26 @@ No existe una ruta para eliminar socios.
 
 `status` es calculado: `open` (hay líneas sin devolver y ninguna vencida), `overdue` (alguna sin devolver y vencida), `closed` (todas devueltas).
 
+Reglas de `POST /loans`:
+
+- Requiere un token de `admin` o `librarian`; `loaned_by_user_id` se obtiene del token y nunca se recibe en el cuerpo.
+- `items` contiene entre 1 y 3 objetos con `book_id` distintos.
+- El servidor calcula `loaned_at` y cada `due_at` en UTC; `due_at` es exactamente catorce días después de `loaned_at`.
+- La validación de socio, límite, vencidos, disponibilidad, descuento y creación del préstamo es atómica. Si alguna línea falla, la respuesta no deja préstamo ni cambios de disponibilidad.
+- Las líneas de la respuesta conservan `book_title`, `isbn` y `category_name` del instante del préstamo, incluso si después cambia el catálogo.
+
+Errores específicos al registrar:
+
+- `401` sin token o con token inválido; `403 FORBIDDEN_ROLE` con un rol insuficiente.
+- `404 NOT_FOUND` si el socio o algún libro no existe, o si el libro está dado de baja.
+- `422 VALIDATION_ERROR` si faltan campos o `items` no tiene entre 1 y 3 elementos.
+- `422 DUPLICATE_BOOK_IN_LOAN` si un `book_id` aparece más de una vez.
+- `422 MEMBER_LIMIT_EXCEEDED` si el total de líneas sin devolver del socio más las solicitadas supera tres; `details` identifica el socio e informa el conteo actual.
+- `409 MEMBER_HAS_OVERDUE` si el socio tiene una línea vencida sin devolver.
+- `409 BOOK_NOT_AVAILABLE` si algún libro no dispone de ejemplares, incluido un conflicto concurrente; la operación completa se revierte.
+
+No hay rutas para editar ni eliminar préstamos o líneas de préstamo.
+
 `POST /loans/{loan_id}/items/{item_id}/return` → 200 con la línea (`returned_at` lleno).
 
 `GET /loans/overdue` → `items`: `{ "loan_id", "item_id", "book_title", "member_name", "due_at", "days_late" }`. Aquí sí se muestra el nombre del
