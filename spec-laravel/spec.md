@@ -175,6 +175,38 @@ Como usuario quiero autenticarme para operar según mi rol.
 - **CA-05.2** Se lista y se busca por nombre o documento, paginado.
 - **CA-05.3** Los socios no se eliminan.
 
+**Precondiciones**
+
+- El solicitante tiene una sesión válida con rol `admin` o `librarian`.
+- El socio es un dato de la biblioteca; no tiene credenciales ni inicia sesión.
+
+**Flujo principal: crear socio**
+
+1. El usuario autorizado envía `full_name` y `document_number` a `POST /api/v1/members`.
+2. El sistema valida los campos y comprueba la unicidad del documento.
+3. El sistema crea el socio y devuelve sus datos públicos de operación, sin credenciales porque el socio no es un usuario.
+
+**Flujo principal: consultar socios**
+
+1. El usuario autorizado consulta `GET /api/v1/members`.
+2. Puede enviar `q` para buscar por nombre o número de documento y usar `page` y `size` para paginar.
+3. El sistema devuelve los elementos de la página y el total de coincidencias.
+4. Al consultar `GET /api/v1/members/{id}`, el sistema devuelve el detalle y `active_loans`, que cuenta los libros sin devolver.
+
+**Flujos alternos y errores**
+
+- Sin token o con token inválido: `401`.
+- Con un rol no autorizado: `403`.
+- Documento repetido: `409 DOCUMENT_TAKEN`.
+- Campos o parámetros de paginación inválidos: `422 VALIDATION_ERROR`.
+- Socio inexistente: `404 NOT_FOUND`.
+
+**Reglas de conservación y privacidad**
+
+- Los socios no se eliminan y no existe una ruta para hacerlo.
+- `full_name` y `document_number` son datos personales disponibles solo para `admin` y `librarian`.
+- El conteo `active_loans` se calcula a partir de líneas de préstamo sin devolver; no se almacena como atributo del socio.
+
 ### HU-06 · Registrar un préstamo
 - **CA-06.1** Un préstamo es de **un** socio, lo registra el usuario autenticado y trae de 1 a 3 líneas.
 - **CA-06.2** No se repite el mismo libro en un préstamo (422).

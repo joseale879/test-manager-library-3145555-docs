@@ -171,6 +171,25 @@ Reglas de autorización y errores para la gestión de libros:
 | GET | `/members/{id}` | admin, librarian | Detalle con `active_loans` (conteo sin devolver) |
 | POST | `/members` | admin, librarian | Crea: `full_name`, `document_number` |
 
+`POST /members`:
+
+```json
+// petición
+{ "full_name": "Ana Pérez", "document_number": "10001234" }
+// 201
+{ "id": "…", "full_name": "Ana Pérez", "document_number": "10001234" }
+```
+
+`GET /members` acepta `q`, `page` y `size`; busca por nombre o documento y usa la respuesta paginada común. `GET /members/{id}` incluye `active_loans`, el conteo de libros sin devolver.
+
+Errores específicos:
+
+- `409 DOCUMENT_TAKEN` si el documento ya existe.
+- `422 VALIDATION_ERROR` si los campos o la paginación no son válidos.
+- `404 NOT_FOUND` si el socio no existe.
+
+No existe una ruta para eliminar socios.
+
 ### 3.6 Préstamos
 
 | Método | Ruta | Rol | Descripción |
